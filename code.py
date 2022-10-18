@@ -8,12 +8,14 @@
 
 import time
 import board
+import digitalio
 import adafruit_vl53l1x
 import neopixel
+import adafruit_dotstar
 import microcontroller
 
 RED = (255, 0, 0)
-YELLOW = (255, 150, 0)
+YELLOW = (233, 100, 0)
 GREEN = (0, 255, 0)
 CYAN = (0, 255, 255)
 BLUE = (0, 0, 255)
@@ -21,13 +23,25 @@ PURPLE = (180, 0, 255)
 
 i2c = board.I2C()
 
+# setup onboard neopixel
 if hasattr(board, "NEOPIXEL"):
     NEOPIXEL = board.NEOPIXEL
 else:
     NEOPIXEL = microcontroller.pin.GPIO16
 
-pixels = neopixel.NeoPixel(board.NEOPIXEL, 1, brightness=0.3, auto_write=False)
+pixels = neopixel.NeoPixel(board.NEOPIXEL, 1, brightness=0.1, auto_write=False)
 
+# setup onboard LED
+if hasattr(board, "LED"):
+    led = digitalio.DigitalInOut(board.LED)
+else:
+    led = digitalio.DigitalInOut(board.A0)
+
+led.direction = digitalio.Direction.OUTPUT
+
+# setup IO
+btn = digitalio.DigitalInOut(board.A0)
+btn.switch_to_input(pull=digitalio.Pull.UP)
 
 vl53 = adafruit_vl53l1x.VL53L1X(i2c)
 
@@ -35,7 +49,7 @@ vl53 = adafruit_vl53l1x.VL53L1X(i2c)
 vl53.distance_mode = 2
 vl53.timing_budget = 200
 
-
+# return color for a predefined
 def color_by_range(number: range):
     if range > 100:
         pixels[0] = GREEN
@@ -71,5 +85,17 @@ while True:
         vl53.clear_interrupt()
         if range is not None:
             color_by_range(vl53.distance)
+        if not btn.value:
+            led.value = True
+            print("Btn true")
+        else:
+            led.value = False
 
         time.sleep(0.1)
+
+# define range min/max/ideal
+# define colors by range: 100-50% green, 50-ideal yellow, ideal%-0 red.
+# while in range
+#  if > ideal + X
+#
+#
