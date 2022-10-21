@@ -43,6 +43,12 @@ led.direction = digitalio.Direction.OUTPUT
 btn = digitalio.DigitalInOut(board.A0)
 btn.switch_to_input(pull=digitalio.Pull.UP)
 
+# setup led strip
+ledstrip = adafruit_dotstar.DotStar(
+    clock=board.SCK, data=board.MOSI, n=10, brightness=0.1
+)
+
+# setup range finder
 vl53 = adafruit_vl53l1x.VL53L1X(i2c)
 
 # OPTIONAL: can set non-default values
@@ -79,6 +85,10 @@ print("--------------------")
 vl53.start_ranging()
 
 while True:
+
+    ledstrip.fill(RED)
+    ledstrip.show()
+
     if vl53.data_ready:
         range = vl53.distance
         print("Distance: {} cm".format(range))
