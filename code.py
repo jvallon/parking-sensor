@@ -86,9 +86,6 @@ vl53.start_ranging()
 
 while True:
 
-    ledstrip.fill(RED)
-    ledstrip.show()
-
     if vl53.data_ready:
         range = vl53.distance
         print("Distance: {} cm".format(range))
